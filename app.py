@@ -1,5 +1,3 @@
-#myenv is the virtual environment name
-
 import streamlit as st
 import pandas as pd
 from ydata_profiling import ProfileReport
@@ -9,8 +7,10 @@ from sklearn.impute import SimpleImputer
 from scipy import stats
 import h2o
 from h2o.automl import H2OAutoML
-import time
 from sklearn.model_selection import train_test_split
+import seaborn as sns
+import matplotlib.pyplot as plt
+import plotly.express as px
 
 block_select_box = False
 if "regression_button" not in st.session_state:
@@ -122,8 +122,26 @@ def train_model():
         st.session_state.classification_button = True
         
         
-def analysis():
-    pass
+def analysis(df):
+    st.write(df.head())
+    # Correlation Heatmap
+    st.subheader("Correlation Heatmap")
+    corr = df.corr() 
+    fig1 = plt.figure(figsize=(16, 14))  
+    sns.heatmap(corr, annot=True, cmap='coolwarm', fmt=".2f", linewidths=0.5)
+    st.pyplot(fig1)
+    # Line plot for each column
+    st.subheader("Line Plot for Each Column")
+    fig3, axes = plt.subplots(len(df.columns), 1, figsize=(16, 5 * len(df.columns)))
+    for i, column in enumerate(df.columns):
+        axes[i].plot(df[column], label=column)
+        axes[i].set_title(f"Line Plot for {column}")
+        axes[i].legend()
+    st.pyplot(fig3)
+    # Plotly Scatter Plot for each column
+    st.subheader("Interactive Scatter Plot for Each Column")
+    fig4 = px.scatter_matrix(df, height=1000, width=1200)  
+    st.plotly_chart(fig4)
 
 with st.sidebar:
     st.image("resources/photo-1666875753105-c63a6f3bdc86.jpg")
@@ -147,7 +165,13 @@ elif main_choice == 'Train Model':
 elif main_choice == 'Analysis':
     st.session_state.regression_button = False
     st.session_state.classification_button = False
-    analysis()
+    st.subheader("Data Overview")
+    st.subheader("Uploaded Dataset")
+    analysis(df)
+    if os.path.exists("data_predict.csv"):
+        st.subheader("Prediction Generated Dataset")
+        df2 = pd.read_csv("data_predict.csv")
+        analysis(df2)
     
 if st.session_state.regression_button:
     option_selected = st.selectbox("The column you want to predict?",options = df.columns,disabled=block_select_box,)
