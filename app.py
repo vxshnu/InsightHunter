@@ -77,9 +77,8 @@ def read_file_from_user():
 def redirect_to_home():
     pass
 
-def regression():
+def train_the_model(option_selected):
     global block_select_box
-    
     st.info("The dataset should exclude the target column.")
     file2 = st.file_uploader("Model Prediction Data",type=['json','csv','xlsx'])
     if file2 is not None:
@@ -94,61 +93,25 @@ def regression():
             with st.spinner('Loading the model!'):
                 h2o.init()
                 h2o_df = h2o.H2OFrame(df)
-                train, test = h2o_df.split_frame(ratios=[.8], seed=1234)
+                train, test = h2o_df.split_frame(ratios=[0.01], seed=1234)
                 aml = H2OAutoML(max_models=10, seed=1, max_runtime_secs=240)
             with st.spinner('Training the model... This may take a few minutes!'):
                 aml.train(y=option_selected, training_frame=train)
             st.subheader("Model Statistics")
             leaderboard = aml.leaderboard
             st.write(leaderboard) 
-            h2o_df2 = h2o.H2OFrame(df2)
-            predicted_df = aml.predict(h2o_df2)
+            with st.spinner('Predicting...'):
+                h2o_df2 = h2o.H2OFrame(df2)
+                predicted_df = aml.predict(h2o_df2)
             predicted_values = predicted_df.as_data_frame()['predict']
             df2[option_selected] = predicted_values
             st.subheader("Dataset with predicted values")
             st.dataframe(df2)
             csv_file = "data_predict.csv"
             df2.to_csv(csv_file, index=False)
-            with open("data_predict.csv", "r") as file:st.download_button(label="Download Predicted CSV",data=file,file_name="data predict.csv",mime="text/csv")
+            with open("data_predict.csv", "r") as file:st.download_button(label="Download new generated CSV",data=file,file_name="data predict.csv",mime="text/csv")
             
-
-def classification():
-    global block_select_box
-    
-    st.info("The dataset should exclude the target column.")
-    file2 = st.file_uploader("Model Prediction Data",type=['json','csv','xlsx'])
-    if file2 is not None:
-        if file2.name.endswith('.json'):
-            df2 = pd.read_json(file2)
-        elif file2.name.endswith('.csv'):
-            df2 = pd.read_csv(file2)
-        elif file2.name.endswith('.xlsx'):
-            df2 = pd.read_excel(file2)
-    if option_selected:
-        if st.button("Train the Model!"):
-            with st.spinner('Loading the model!'):
-                h2o.init()
-                h2o_df = h2o.H2OFrame(df)
-                h2o_df[option_selected] = h2o_df[option_selected].asfactor()
-                train, test = h2o_df.split_frame(ratios=[.8], seed=1234)
-                aml = H2OAutoML(max_models=10, seed=1, max_runtime_secs=240)
-            with st.spinner('Training the model... This may take a few minutes!'):
-                x = list(df.columns)
-                x.remove(option_selected)
-                aml.train(x=x, y=option_selected, training_frame=train)
-            st.subheader("Model Statistics")
-            leaderboard = aml.leaderboard
-            st.write(leaderboard)
-            h2o_df2 = h2o.H2OFrame(df2)
-            predicted_df = aml.predict(h2o_df2)
-            predicted_values = predicted_df.as_data_frame()['predict']
-            df2[option_selected] = predicted_values
-            st.subheader("Dataset with predicted values")
-            st.dataframe(df2)
-            csv_file = "data_predict.csv"
-            df2.to_csv(csv_file, index=False)
-            with open("data_predict.csv", "r") as file:st.download_button(label="Download Predicted CSV",data=file,file_name="data predict.csv",mime="text/csv")
-
+            
 def train_model():  
     left,right = st.columns(2)
     if left.button("Regression Model",use_container_width=True) :
