@@ -1,3 +1,5 @@
+#myenv is the virtual environment name
+
 import streamlit as st
 import pandas as pd
 from ydata_profiling import ProfileReport
@@ -5,6 +7,16 @@ from streamlit_pandas_profiling import st_profile_report
 import os
 from sklearn.impute import SimpleImputer
 from scipy import stats
+import h2o
+from h2o.automl import H2OAutoML
+import time
+from sklearn.model_selection import train_test_split
+
+block_select_box = False
+if "regression_button" not in st.session_state:
+    st.session_state.regression_button = False
+if "classification_button" not in st.session_state:
+    st.session_state.classification_button = False
 
 if os.path.exists("data.csv"):
     df = pd.read_csv("data.csv")
@@ -65,9 +77,39 @@ def read_file_from_user():
 def redirect_to_home():
     pass
 
+def regression():
+    global block_select_box
+    option_selected = st.selectbox("The column you want to predict?",options = df.columns,disabled=block_select_box,)
+    if option_selected:
+        if st.button("Train the Model!"):
+            with st.spinner('Loading the model!'):
+                h2o.init()
+                h2o_df = h2o.H2OFrame(df)
+                train, test = h2o_df.split_frame(ratios=[.8], seed=1234)
+                aml = H2OAutoML(max_models=10, seed=1, max_runtime_secs=240)
+            with st.spinner('Training the model... This may take a few minutes!'):
+                aml.train(y=option_selected, training_frame=train)
+            st.subheader("Leaderboard")
+            leaderboard = aml.leaderboard
+            st.write(leaderboard)
+
+    
+def classification():
+    global block_select_box
+    option_selected = st.selectbox("The column you want to predict?",options = df.columns,disabled=block_select_box,)
+    if option_selected:
+        if st.button("Train the Model!"):
+            h2o.init()
+            block_select_box = True
 
 def perform_analysis():  
-    pass
+    left,right = st.columns(2)
+    if left.button("Regression Model",use_container_width=True) :
+        st.session_state.regression_button = True
+        st.session_state.classification_button = False
+    if right.button("Classification Model",use_container_width=True):
+        st.session_state.regression_button = False
+        st.session_state.classification_button = True
 
 with st.sidebar:
     st.image("resources/photo-1666875753105-c63a6f3bdc86.jpg")
@@ -75,11 +117,22 @@ with st.sidebar:
     main_choice = st.radio("Choices",['Home','Upload File','Data Profiling','Perform Analysis'],label_visibility='hidden')
 
 if main_choice == 'Home':
+    st.session_state.regression_button = False
+    st.session_state.classification_button = False
     redirect_to_home()
 elif main_choice == 'Upload File':
+    st.session_state.regression_button = False
+    st.session_state.classification_button = False
     read_file_from_user()
 elif main_choice == 'Data Profiling':
+    st.session_state.regression_button = False
+    st.session_state.classification_button = False
     data_profiling()
 elif main_choice == 'Perform Analysis':
     perform_analysis()
     
+if st.session_state.regression_button:
+    regression()
+    
+if st.session_state.classification_button:
+    classification()
