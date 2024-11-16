@@ -12,6 +12,8 @@ import seaborn as sns
 import matplotlib.pyplot as plt
 import plotly.express as px
 
+BACKEND_URL = "http://127.0.0.1:5000/predict"
+
 block_select_box = False
 if "regression_button" not in st.session_state:
     st.session_state.regression_button = False
@@ -180,3 +182,6 @@ if st.session_state.regression_button:
 if st.session_state.classification_button:
     option_selected = st.selectbox("The column you want to classify?",options = df.columns,disabled=block_select_box,)
     train_the_model(option_selected)
+    
+    
+#response = requests.post(BACKEND_URL, json={"query": user_query})
