@@ -1,0 +1,50 @@
+Query,Code
+"Get all rows where 'Salary' is greater than 60000 (columns: Employee_ID, Name, Position, Salary)",df[df['Salary'] > 60000]
+"Filter rows where 'Product_Category' is 'Furniture' (columns: Product_ID, Name, Product_Category, Price)",df[df['Product_Category'] == 'Furniture']
+"Find all flights with 'Duration' over 5 hours (columns: Flight_ID, Airline, Duration, Status)",df[df['Duration'] > 5]
+"List unique values in the column 'Job_Role' (columns: Employee_ID, Name, Job_Role, Salary)",df['Job_Role'].unique()
+"Get the mean value of the column 'Score' (columns: Student_ID, Name, Subject, Score)",df['Score'].mean()
+"Find all transactions where 'Amount' exceeds 500 (columns: Transaction_ID, Customer, Amount, Date)",df[df['Amount'] > 500]
+"Get rows where 'Diagnosis' is 'COVID-19' (columns: Patient_ID, Name, Diagnosis, Age)",df[df['Diagnosis'] == 'COVID-19']
+"Filter rows where 'Attendance' is less than 50% (columns: Student_ID, Name, Attendance, Grade)",df[df['Attendance'] < 50]
+"Calculate the total value of the column 'Revenue' (columns: Store_ID, Name, Revenue, Expenses)",df['Revenue'].sum()
+"Find rows where 'Region' is 'West' and 'Profit' is over 1000 (columns: Sales_ID, Region, Profit, Revenue)",df[(df['Region'] == 'West') & (df['Profit'] > 1000)]
+"List all products where 'Stock' is below 20 (columns: Product_ID, Name, Stock, Price)",df[df['Stock'] < 20]
+"Get the maximum value in the column 'Rating' (columns: Movie_ID, Title, Genre, Rating)",df['Rating'].max()
+"Filter rows where 'Status' is 'Inactive' (columns: Account_ID, Name, Status, Balance)",df[df['Status'] == 'Inactive']
+"Find all rows where 'Payment_Method' is 'Debit Card' (columns: Transaction_ID, Customer, Payment_Method, Amount)",df[df['Payment_Method'] == 'Debit Card']
+"Calculate the mean of the column 'Age' (columns: Patient_ID, Name, Age, Diagnosis)",df['Age'].mean()
+"List unique values in the column 'Category' (columns: Product_ID, Category, Price, Stock)",df['Category'].unique()
+"Filter rows where 'Weather' is 'Sunny' (columns: Date, City, Weather, Temperature)",df[df['Weather'] == 'Sunny']
+"Find all players with 'Points' above 30 (columns: Player_ID, Name, Team, Points)",df[df['Points'] > 30]
+"Get rows where 'Grade' is 'B' (columns: Student_ID, Name, Subject, Grade)",df[df['Grade'] == 'B']
+"Calculate the total 'Sales_Amount' (columns: Sales_ID, Product, Sales_Amount, Region)",df['Sales_Amount'].sum()
+"Find all entries where 'Diagnosis' is 'Flu' (columns: Patient_ID, Name, Diagnosis, Age)",df[df['Diagnosis'] == 'Flu']
+"List all rows where 'Job_Title' is 'Data Analyst' (columns: Employee_ID, Name, Job_Title, Salary)",df[df['Job_Title'] == 'Data Analyst']
+"Filter rows where 'Temperature' is above 25 (columns: Date, City, Temperature, Humidity)",df[df['Temperature'] > 25]
+"Get the unique values in the column 'Genre' (columns: Movie_ID, Title, Genre, Rating)",df['Genre'].unique()
+"Find all rows where 'Position' is 'Goalkeeper' (columns: Player_ID, Name, Position, Saves)",df[df['Position'] == 'Goalkeeper']
+"Calculate the total number of items sold (columns: Product_ID, Product, Quantity_Sold, Revenue)",df['Quantity_Sold'].sum()
+"Get rows where 'Team' is 'Lakers' (columns: Player_ID, Name, Team, Points)",df[df['Team'] == 'Lakers']
+"Filter rows where 'Course' is 'Computer Science' (columns: Student_ID, Name, Course, Grade)",df[df['Course'] == 'Computer Science']
+"List all employees with 'Years_At_Company' more than 10 (columns: Employee_ID, Name, Years_At_Company, Salary)",df[df['Years_At_Company'] > 10]
+"Get the mean value of the column 'Mileage' (columns: Vehicle_ID, Model, Mileage, Price)",df['Mileage'].mean()
+"Find all rows where 'Status' is 'Processing' (columns: Order_ID, Product, Status, Amount)",df[df['Status'] == 'Processing']
+"Filter rows where 'Fuel_Type' is 'Hybrid' (columns: Vehicle_ID, Brand, Fuel_Type, Range)",df[df['Fuel_Type'] == 'Hybrid']
+"Get rows where 'Rating' is below 2.0 (columns: Product_ID, Product_Name, Rating, Price)",df[df['Rating'] < 2.0]
+"List all movies released in 2021 (columns: Movie_ID, Title, Release_Year, Genre)",df[df['Release_Year'] == 2021]
+"Find rows where 'Profit_Margin' exceeds 30% (columns: Store_ID, Revenue, Expenses, Profit_Margin)",df[df['Profit_Margin'] > 30]
+"Get the total 'Medals' won by athletes (columns: Athlete_ID, Name, Sport, Medals)",df['Medals'].sum()
+"Filter rows where 'Attendance' is above 90% (columns: Student_ID, Name, Attendance, Grade)",df[df['Attendance'] > 90]
+"Find all transactions with 'Amount' less than 50 (columns: Transaction_ID, Customer, Amount, Date)",df[df['Amount'] < 50]
+"Calculate the mean value of the column 'Distance' (columns: Trip_ID, Start_Location, Distance, Duration)",df['Distance'].mean()
+"Get rows where 'Diagnosis' is 'Anemia' (columns: Patient_ID, Name, Age, Diagnosis)",df[df['Diagnosis'] == 'Anemia']
+"Filter rows where 'Weather' is 'Snowy' (columns: Date, City, Weather, Temperature)",df[df['Weather'] == 'Snowy']
+"List all students with 'Grade' as 'A' (columns: Student_ID, Name, Grade, Score)",df[df['Grade'] == 'A']
+"Get the row with the maximum 'Revenue' (columns: Store_ID, Name, Revenue, Expenses)",df.loc[df['Revenue'].idxmax()]
+"Find all rows where 'Stock' is above 100 (columns: Product_ID, Name, Stock, Price)",df[df['Stock'] > 100]
+"Calculate the total 'Hours_Worked' (columns: Employee_ID, Name, Hours_Worked, Salary)",df['Hours_Worked'].sum()
+"Filter rows where 'Customer_Satisfaction' is below 3 (columns: Survey_ID, Customer, Customer_Satisfaction, Feedback)",df[df['Customer_Satisfaction'] < 3]
+"Get all books where 'Rating' exceeds 4.8 (columns: Book_ID, Title, Author, Rating)",df[df['Rating'] > 4.8]
+"Find rows where 'Price' is between 100 and 200 (columns: Product_ID, Name, Price, Stock)",df[(df['Price'] >= 100) & (df['Price'] <= 200)]
+"List unique values in the column 'Brand' (columns: Product_ID, Brand, Category, Price)",df['Brand'].unique()
