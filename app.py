@@ -11,6 +11,7 @@ from sklearn.model_selection import train_test_split
 import seaborn as sns
 import matplotlib.pyplot as plt
 import plotly.express as px
+import requests
 
 BACKEND_URL = "http://127.0.0.1:5000/predict"
 
@@ -145,10 +146,26 @@ def analysis(df):
     fig4 = px.scatter_matrix(df, height=1000, width=1200)  
     st.plotly_chart(fig4)
 
+def data_filtering_aggregation():
+    st.info("An AI model capable of filtering and aggregating your data. Type in the text box your preferred filtering/aggregation criteria.")
+    query = st.text_input("How can I help?",placeholder="Your question?")
+    column_names = df.columns.tolist()
+    if query is not None:
+        query+=" (columns:"
+        for i in range(0,len(column_names)):
+            query+=" "
+            if i == len(column_names)-1:
+                query+=column_names[i]+")"
+            else:
+                query+=column_names[i]+","
+        st.write("Query:",query)
+        response = requests.post(BACKEND_URL, json={"query": query})
+        st.write(response.json())
+
 with st.sidebar:
     st.image("resources/photo-1666875753105-c63a6f3bdc86.jpg")
     st.title("INSIGHT HUNTER")
-    main_choice = st.radio("Choices",['Home','Upload File','Data Profiling','Train Model','Analysis'],label_visibility='hidden')
+    main_choice = st.radio("Choices",['Home','Upload File','Data Profiling','Train Model','Analysis','Data Filtering/Aggregation'],label_visibility='hidden')
 
 if main_choice == 'Home':
     st.session_state.regression_button = False
@@ -174,6 +191,11 @@ elif main_choice == 'Analysis':
         st.subheader("Prediction Generated Dataset")
         df2 = pd.read_csv("data_predict.csv")
         analysis(df2)
+elif main_choice == 'Data Filtering/Aggregation':
+    st.session_state.regression_button = False
+    st.session_state.classification_button = False
+    st.subheader('Data Filtering/Aggregation')
+    data_filtering_aggregation()
     
 if st.session_state.regression_button:
     option_selected = st.selectbox("The column you want to predict?",options = df.columns,disabled=block_select_box,)
