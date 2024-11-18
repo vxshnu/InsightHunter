@@ -161,10 +161,17 @@ def data_filtering_aggregation():
         response = requests.post(BACKEND_URL, json={"query": query})
         code = response.json()
         st.code(code['result'], language="python")
-        local_variables = {"df": df} 
-        exec("df3="+code['result'], {"__builtins__": None}, local_variables)
-        df3 = local_variables.get("df3")
-        st.write(df3)
+        if st.button("Code not accurate?"):
+            code['result'] = st.text_input("Type in your preferred code!")
+            st.code(code['result'], language="python")
+        if st.button("Proceed with dataset modification?"):
+            local_variables = {"df": df} 
+            exec("df3="+code['result'], {"__builtins__": None}, local_variables)
+            df3 = local_variables.get("df3")
+            if isinstance (df3,pd.DataFrame):
+                st.dataframe(df3)
+            else:
+                st.write(df3)
 
 with st.sidebar:
     st.image("resources/photo-1666875753105-c63a6f3bdc86.jpg")

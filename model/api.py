@@ -19,14 +19,8 @@ def predict():
         input_data = request.json.get("query")
         if not input_data:
             return jsonify({"error": "No query provided"}), 400
-        
-        # Tokenize input and move tensors to the GPU
         inputs = tokenizer.encode("generate pandas code: " + input_data, return_tensors="pt").to(device)
-        
-        # Generate predictions
         outputs = model.generate(inputs, max_length=100, num_beams=4, early_stopping=True)
-        
-        # Decode output
         decoded_output = tokenizer.decode(outputs[0], skip_special_tokens=True)
         print(decoded_output)
         return jsonify({"result": decoded_output})
