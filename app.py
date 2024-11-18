@@ -148,7 +148,7 @@ def analysis(df):
 
 def data_filtering_aggregation():
     st.info("An AI model capable of filtering and aggregating your data. Type in the text box your preferred filtering/aggregation criteria.")
-    query = st.text_input("How can I help?",placeholder="Your question?")
+    query = st.text_input("How can I help?",placeholder="Your question?",value = None)
     column_names = df.columns.tolist()
     if query is not None:
         query+=" (columns:"
@@ -158,9 +158,13 @@ def data_filtering_aggregation():
                 query+=column_names[i]+")"
             else:
                 query+=column_names[i]+","
-        st.write("Query:",query)
         response = requests.post(BACKEND_URL, json={"query": query})
-        st.write(response.json())
+        code = response.json()
+        st.code(code['result'], language="python")
+        local_variables = {"df": df} 
+        exec("df3="+code['result'], {"__builtins__": None}, local_variables)
+        df3 = local_variables.get("df3")
+        st.write(df3)
 
 with st.sidebar:
     st.image("resources/photo-1666875753105-c63a6f3bdc86.jpg")
@@ -203,7 +207,6 @@ if st.session_state.regression_button:
     
 if st.session_state.classification_button:
     option_selected = st.selectbox("The column you want to classify?",options = df.columns,disabled=block_select_box,)
+    df[option_selected] = df[option_selected].astype('category')
     train_the_model(option_selected)
     
-    
-#response = requests.post(BACKEND_URL, json={"query": user_query})
