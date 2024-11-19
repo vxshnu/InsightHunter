@@ -83,36 +83,67 @@ def redirect_to_home():
 def train_the_model(option_selected):
     global block_select_box
     st.info("The dataset should exclude the target column.")
-    file2 = st.file_uploader("Model Prediction Data",type=['json','csv','xlsx'])
-    if file2 is not None:
-        if file2.name.endswith('.json'):
-            df2 = pd.read_json(file2)
-        elif file2.name.endswith('.csv'):
-            df2 = pd.read_csv(file2)
-        elif file2.name.endswith('.xlsx'):
-            df2 = pd.read_excel(file2) 
-    if option_selected:
-        if st.button("Train the Model!"): 
-            with st.spinner('Loading the model!'):
-                h2o.init()
-                h2o_df = h2o.H2OFrame(df)
-                train, test = h2o_df.split_frame(ratios=[0.01], seed=1234)
+
+    file2 = st.file_uploader("Model Prediction Data", type=['json', 'csv', 'xlsx'])
+    if file2 is None:
+        st.warning("Please upload a dataset for prediction.")
+        return
+
+    # Read and validate prediction data
+    if file2.name.endswith('.json'):
+        df2 = pd.read_json(file2)
+    elif file2.name.endswith('.csv'):
+        df2 = pd.read_csv(file2)
+    elif file2.name.endswith('.xlsx'):
+        df2 = pd.read_excel(file2)
+
+    # Validate schema
+    if option_selected not in df2.columns:
+        st.error(f"The selected column '{option_selected}' is not present in the prediction dataset.")
+        return
+
+    if st.button("Train the Model!"):
+        try:
+            with st.spinner("Initializing H2O..."):
+                h2o.init(max_mem_size="2G")
+
+            # Convert training data to H2OFrame
+            h2o_df = h2o.H2OFrame(df)
+            if len(h2o_df[option_selected].unique()) == 2:  # Binary classification
+                h2o_df[option_selected] = h2o_df[option_selected].asfactor()
+
+            train, test = h2o_df.split_frame(ratios=[0.8], seed=1234)
+
+            # Train the AutoML model
+            with st.spinner("Training the model... This may take a while."):
                 aml = H2OAutoML(max_models=10, seed=1, max_runtime_secs=240)
-            with st.spinner('Training the model... This may take a few minutes!'):
                 aml.train(y=option_selected, training_frame=train)
+
             st.subheader("Model Statistics")
-            leaderboard = aml.leaderboard
-            st.write(leaderboard) 
-            with st.spinner('Predicting...'):
+            leaderboard = aml.leaderboard.as_data_frame()
+            st.dataframe(leaderboard)
+
+            # Predict with the trained model
+            with st.spinner("Generating predictions..."):
                 h2o_df2 = h2o.H2OFrame(df2)
-                predicted_df = aml.predict(h2o_df2)
-            predicted_values = predicted_df.as_data_frame()['predict']
-            df2[option_selected] = predicted_values
-            st.subheader("Dataset with predicted values")
+                predictions = aml.predict(h2o_df2)
+            
+            # Append predictions to the original DataFrame
+            df2[option_selected] = predictions.as_data_frame()['predict']
+            st.subheader("Dataset with Predicted Values")
             st.dataframe(df2)
+
+            # Download predictions as CSV
             csv_file = "data_predict.csv"
             df2.to_csv(csv_file, index=False)
-            with open("data_predict.csv", "r") as file:st.download_button(label="Download new generated CSV",data=file,file_name="data predict.csv",mime="text/csv")
+            with open(csv_file, "rb") as file:
+                st.download_button("Download CSV with Predictions", data=file, file_name="data_predict.csv", mime="text/csv")
+
+        except Exception as e:
+            st.error(f"An error occurred: {e}")
+        finally:
+            h2o.cluster().shutdown(prompt=False)  # Cleanup H2O environment
+
             
             
 def train_model():  
@@ -233,7 +264,7 @@ if st.session_state.regression_button:
     
 if st.session_state.classification_button:
     option_selected = st.selectbox("The column you want to classify?",options = df.columns,disabled=block_select_box,)
-    df[option_selected] = df[option_selected].astype('category')
+    df[option_selected] = df[option_selected].asfactor()
     train_the_model(option_selected)
     
 def delete_files():
