@@ -4,14 +4,13 @@ from ydata_profiling import ProfileReport
 from streamlit_pandas_profiling import st_profile_report
 import os
 from sklearn.impute import SimpleImputer
-from scipy import stats
 import h2o
 from h2o.automl import H2OAutoML
-from sklearn.model_selection import train_test_split
 import seaborn as sns
 import matplotlib.pyplot as plt
 import plotly.express as px
 import requests
+import atexit
 
 BACKEND_URL = "http://127.0.0.1:5000/predict"
 
@@ -129,25 +128,31 @@ def analysis(df):
     st.write(df.head())
     # Correlation Heatmap
     st.subheader("Correlation Heatmap")
-    corr = df.corr() 
-    fig1 = plt.figure(figsize=(16, 14))  
-    sns.heatmap(corr, annot=True, cmap='coolwarm', fmt=".2f", linewidths=0.5)
-    st.pyplot(fig1)
+    heat_map_options = st.multiselect("Select columns for correlation",df.columns.tolist())
+    if heat_map_options:
+        corr = df[heat_map_options].corr() 
+        fig1 = plt.figure(figsize=(16, 14))  
+        sns.heatmap(corr, annot=True, cmap='coolwarm', fmt=".2f", linewidths=0.5)
+        st.pyplot(fig1)
     # Line plot for each column
-    st.subheader("Line Plot for Each Column")
-    fig3, axes = plt.subplots(len(df.columns), 1, figsize=(16, 5 * len(df.columns)))
-    for i, column in enumerate(df.columns):
-        axes[i].plot(df[column], label=column)
-        axes[i].set_title(f"Line Plot for {column}")
-        axes[i].legend()
-    st.pyplot(fig3)
+    st.subheader("Line Plot")
+    line_plot_options = st.multiselect("Select any 2 columns for line plot",df.columns.tolist(),max_selections=2)
+    if len(line_plot_options) == 2:
+        fig3, axes = plt.subplots(len(df[line_plot_options].columns), 1, figsize=(16, 5 * len(df[line_plot_options].columns)))
+        for i, column in enumerate(df[line_plot_options].columns):
+            axes[i].plot(df[column], label=column)
+            axes[i].set_title(f"Line Plot for {column}")
+            axes[i].legend()
+        st.pyplot(fig3)
     # Plotly Scatter Plot for each column
-    st.subheader("Interactive Scatter Plot for Each Column")
-    fig4 = px.scatter_matrix(df, height=1000, width=1200)  
-    st.plotly_chart(fig4)
+    st.subheader("Interactive Scatter Plot")
+    scatter_plot_options = st.multiselect("Select any 2 columns for scatter plot",df.columns.tolist(),max_selections=2)
+    if len(scatter_plot_options) == 2:
+        fig4 = px.scatter_matrix(df[scatter_plot_options], height=1000, width=1200)  
+        st.plotly_chart(fig4)
 
 def data_filtering_aggregation():
-    st.info("An AI model capable of filtering and aggregating your data. Type in the text box your preferred filtering/aggregation criteria.")
+    st.info("An AI model capable of filtering and aggregating your data. Type in the text box your preferred filtering/aggregation criteria. Remember the model can make mistakes!")
     query = st.text_input("How can I help?",placeholder="Your question?",value = None)
     column_names = df.columns.tolist()
     if query is not None:
@@ -159,24 +164,25 @@ def data_filtering_aggregation():
             else:
                 query+=column_names[i]+","
         response = requests.post(BACKEND_URL, json={"query": query})
-        code = response.json()
-        st.code(code['result'], language="python")
-        if st.button("Code not accurate?"):
-            code['result'] = st.text_input("Type in your preferred code!")
-            st.code(code['result'], language="python")
-        if st.button("Proceed with dataset modification?"):
+        code = response.json()    
+        code['result'] = st.text_input("Type in your preferred code!",value = code['result'])
+        st.info("If there’s an issue with the code, please provide the corrected version; otherwise, leave it unchanged.")
+        if st.button("Show Result?"):
             local_variables = {"df": df} 
             exec("df3="+code['result'], {"__builtins__": None}, local_variables)
             df3 = local_variables.get("df3")
             if isinstance (df3,pd.DataFrame):
                 st.dataframe(df3)
+                df3.to_csv("filtered_csv.csv", index=False)
+                with open("filtered_csv.csv", "r") as file:st.download_button(label="Download new filtered dataset",data=file,file_name="data predict.csv",mime="text/csv")
+            
             else:
                 st.write(df3)
 
 with st.sidebar:
     st.image("resources/photo-1666875753105-c63a6f3bdc86.jpg")
     st.title("INSIGHT HUNTER")
-    main_choice = st.radio("Choices",['Home','Upload File','Data Profiling','Train Model','Analysis','Data Filtering/Aggregation'],label_visibility='hidden')
+    main_choice = st.radio("Choices",['Home','Upload File','Data Profiling','Train Model','Visualization','Data Filtering/Aggregation'],label_visibility='hidden')
 
 if main_choice == 'Home':
     st.session_state.regression_button = False
@@ -192,7 +198,7 @@ elif main_choice == 'Data Profiling':
     data_profiling()
 elif main_choice == 'Train Model':
     train_model()
-elif main_choice == 'Analysis':
+elif main_choice == 'Visualization':
     st.session_state.regression_button = False
     st.session_state.classification_button = False
     st.subheader("Data Overview")
@@ -217,3 +223,10 @@ if st.session_state.classification_button:
     df[option_selected] = df[option_selected].astype('category')
     train_the_model(option_selected)
     
+def delete_files():
+    paths = ['data.csv','data_predict.csv','filtered_csv.csv']
+    for path in paths:
+        if os.path.exists(path):
+            os.remove(path)
+
+atexit.register(delete_files)

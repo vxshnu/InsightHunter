@@ -1,18 +1,16 @@
 from flask import Flask, request, jsonify
 from transformers import T5Tokenizer, T5ForConditionalGeneration
 import torch
+from flask_cors import CORS
 
 app = Flask(__name__)
+CORS(app)
 
-# Check if CUDA is available and set the device
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 print(f"Using device: {device}")
-
-# Load model and tokenizer
 MODEL_PATH = "model/TEXT TO PANDAS"
 model = T5ForConditionalGeneration.from_pretrained(MODEL_PATH).to(device)
 tokenizer = T5Tokenizer.from_pretrained(MODEL_PATH)
-
 @app.route('/predict', methods=['POST'])
 def predict():
     try:
