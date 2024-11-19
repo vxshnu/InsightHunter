@@ -1,3 +1,4 @@
+pip==24.3.1
 streamlit==1.40.1
 pandas==2.2.2
 ydata-profiling==4.12.0
