@@ -124,11 +124,11 @@ def train_model():
         st.session_state.classification_button = True
         
         
-def analysis(df):
+def analysis(df,key):
     st.write(df.head())
     # Correlation Heatmap
     st.subheader("Correlation Heatmap")
-    heat_map_options = st.multiselect("Select columns for correlation",df.columns.tolist())
+    heat_map_options = st.multiselect("Select columns for correlation",df.columns.tolist(),key=key+1)
     if heat_map_options:
         corr = df[heat_map_options].corr() 
         fig1 = plt.figure(figsize=(16, 14))  
@@ -136,7 +136,7 @@ def analysis(df):
         st.pyplot(fig1)
     # Line plot for each column
     st.subheader("Line Plot")
-    line_plot_options = st.multiselect("Select any 2 columns for line plot",df.columns.tolist(),max_selections=2)
+    line_plot_options = st.multiselect("Select any 2 columns for line plot",df.columns.tolist(),max_selections=2,key=key+2)
     if len(line_plot_options) == 2:
         fig3, axes = plt.subplots(len(df[line_plot_options].columns), 1, figsize=(16, 5 * len(df[line_plot_options].columns)))
         for i, column in enumerate(df[line_plot_options].columns):
@@ -146,7 +146,7 @@ def analysis(df):
         st.pyplot(fig3)
     # Plotly Scatter Plot for each column
     st.subheader("Interactive Scatter Plot")
-    scatter_plot_options = st.multiselect("Select any 2 columns for scatter plot",df.columns.tolist(),max_selections=2)
+    scatter_plot_options = st.multiselect("Select any 2 columns for scatter plot",df.columns.tolist(),max_selections=2,key=key)
     if len(scatter_plot_options) == 2:
         fig4 = px.scatter_matrix(df[scatter_plot_options], height=1000, width=1200)  
         st.plotly_chart(fig4)
@@ -175,7 +175,6 @@ def data_filtering_aggregation():
                 st.dataframe(df3)
                 df3.to_csv("filtered_csv.csv", index=False)
                 with open("filtered_csv.csv", "r") as file:st.download_button(label="Download new filtered dataset",data=file,file_name="data predict.csv",mime="text/csv")
-            
             else:
                 st.write(df3)
 
@@ -193,26 +192,39 @@ elif main_choice == 'Upload File':
     st.session_state.classification_button = False
     read_file_from_user()
 elif main_choice == 'Data Profiling':
-    st.session_state.regression_button = False
-    st.session_state.classification_button = False
-    data_profiling()
+    if os.path.exists('data.csv'):
+        st.session_state.regression_button = False
+        st.session_state.classification_button = False
+        data_profiling()
+    else:
+        st.warning("Upload a dataset to view insights!")
+    
 elif main_choice == 'Train Model':
-    train_model()
+    if os.path.exists('data.csv'):
+        train_model()
+    else:
+        st.warning("Upload a dataset to view insights!")
 elif main_choice == 'Visualization':
-    st.session_state.regression_button = False
-    st.session_state.classification_button = False
-    st.subheader("Data Overview")
-    st.subheader("Uploaded Dataset")
-    analysis(df)
-    if os.path.exists("data_predict.csv"):
-        st.subheader("Prediction Generated Dataset")
-        df2 = pd.read_csv("data_predict.csv")
-        analysis(df2)
+    if os.path.exists('data.csv'):
+        st.session_state.regression_button = False
+        st.session_state.classification_button = False
+        st.subheader("Data Overview")
+        st.subheader("Uploaded Dataset")
+        analysis(df,20)
+        if os.path.exists("data_predict.csv"):
+            st.subheader("Prediction Generated Dataset")
+            df2 = pd.read_csv("data_predict.csv")
+            analysis(df2,10)
+    else:
+        st.warning("Upload a dataset to view insights!")
 elif main_choice == 'Data Filtering/Aggregation':
-    st.session_state.regression_button = False
-    st.session_state.classification_button = False
-    st.subheader('Data Filtering/Aggregation')
-    data_filtering_aggregation()
+    if os.path.exists('data.csv'):
+        st.session_state.regression_button = False
+        st.session_state.classification_button = False
+        st.subheader('Data Filtering/Aggregation')
+        data_filtering_aggregation()
+    else:
+        st.warning("Upload a dataset to view insights!")
     
 if st.session_state.regression_button:
     option_selected = st.selectbox("The column you want to predict?",options = df.columns,disabled=block_select_box,)

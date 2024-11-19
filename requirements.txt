@@ -1,0 +1,10 @@
+streamlit
+pandas
+ydata-profiling
+streamlit-pandas-profiling
+scikit-learn
+h2o
+seaborn
+matplotlib
+plotly
+requests
