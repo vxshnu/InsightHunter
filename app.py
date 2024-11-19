@@ -1,7 +1,7 @@
 import streamlit as st
 import pandas as pd
 from ydata_profiling import ProfileReport
-#from streamlit_pandas_profiling import st_profile_report
+from streamlit_pandas_profiling import st_profile_report
 import os
 from sklearn.impute import SimpleImputer
 import h2o
@@ -29,7 +29,7 @@ def data_profiling():
     if st.checkbox('Show Dataset'):
         st.dataframe(df)
     if st.checkbox('Show Data Profiling'):
-        st.markdown(profile.to_html(), unsafe_allow_html=True)
+        st_profile_report(profile)
     if st.checkbox('Perform Data Preprocessing'):
         flag = 0
         selections = st.multiselect("Methods Available",["Remove Rows with Null Values","Imputation","Removing Duplicates"])
