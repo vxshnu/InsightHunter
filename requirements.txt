@@ -1,4 +1,5 @@
 streamlit
+phik==0.11.1
 pandas
 ydata-profiling
 streamlit-pandas-profiling
