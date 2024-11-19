@@ -264,7 +264,7 @@ if st.session_state.regression_button:
     
 if st.session_state.classification_button:
     option_selected = st.selectbox("The column you want to classify?",options = df.columns,disabled=block_select_box,)
-    df[option_selected] = df[option_selected].asfactor()
+    df[option_selected] = df[option_selected].astype('category')
     train_the_model(option_selected)
     
 def delete_files():
