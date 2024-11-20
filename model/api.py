@@ -8,7 +8,7 @@ CORS(app)
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 print(f"Using device: {device}")
-MODEL_PATH = "model/TEXT TO PANDAS"
+MODEL_PATH = "vxshnu8690/text-to-pandas"
 model = T5ForConditionalGeneration.from_pretrained(MODEL_PATH).to(device)
 tokenizer = T5Tokenizer.from_pretrained(MODEL_PATH)
 @app.route('/predict', methods=['POST'])
