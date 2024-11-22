@@ -28,9 +28,11 @@ def data_profiling():
     profile = ProfileReport(df, title="Data Profiling Report", explorative=True)
     if st.checkbox('Show Dataset'):
         st.dataframe(df)
+    st.write("")
     if st.checkbox('Show Data Profiling'):
         report_html = profile.to_html()
         st.components.v1.html(report_html, height=1000, scrolling=True)
+    st.write("")
     if st.checkbox('Perform Data Preprocessing'):
         flag = 0
         selections = st.multiselect("Methods Available",["Remove Rows with Null Values","Imputation","Removing Duplicates"])
@@ -78,7 +80,20 @@ def read_file_from_user():
         df.to_csv(csv_file, index=False)
 
 def redirect_to_home():
-    pass
+    st.title("INSIGHT :green[HUNTER]")
+    st.write("")
+    st.write("")
+    st.write("")
+    st.write("")
+    st.subheader(":blue[_Clean and prepare your data effortlessly._]",divider=True)
+    st.subheader(":green[_Explore trends with interactive visualizations._]",divider=True)
+    st.subheader(":orange[_Build predictive models with ease._]",divider=True)
+    st.subheader(":red[_Use AI to simplify data filtering and aggregation._]",divider=True)
+    st.write("")
+    st.write("")
+    st.write("")
+    st.write("")
+    st.caption("_Made by Vishnu Narayanan_")
 
 def train_the_model(option_selected):
     global block_select_box
@@ -116,6 +131,8 @@ def train_the_model(option_selected):
             
             
 def train_model():  
+    st.title("Train Model")
+    st.write("")
     left,right = st.columns(2)
     if left.button("Regression Model",use_container_width=True) :
         st.session_state.regression_button = True
@@ -152,6 +169,19 @@ def analysis(df,key):
         fig4 = px.scatter_matrix(df[scatter_plot_options], height=1000, width=1200)  
         st.plotly_chart(fig4)
 
+
+def checkForConnection():
+    try:
+        with st.spinner("Connecting to the server, please wait..."):
+            response = requests.get(BACKEND_URL,timeout=5)
+        if response.status_code == 200:
+            return True
+        else:
+            return False
+    except requests.exceptions.RequestException:
+        return False
+        
+
 def data_filtering_aggregation():
     st.info("An AI model capable of filtering and aggregating your data. Type in the text box your preferred filtering/aggregation criteria. Remember the model can make mistakes!")
     query = st.text_input("How can I help?",placeholder="Your question?",value = None)
@@ -164,20 +194,24 @@ def data_filtering_aggregation():
                 query+=column_names[i]+")"
             else:
                 query+=column_names[i]+","
-        response = requests.post(BACKEND_URL, json={"query": query})
-        code = response.json()    
-        code['result'] = st.text_input("Type in your preferred code!",value = code['result'])
-        st.info("If there’s an issue with the code, please provide the corrected version; otherwise, leave it unchanged.")
-        if st.button("Show Result?"):
-            local_variables = {"df": df} 
-            exec("df3="+code['result'], {"__builtins__": None}, local_variables)
-            df3 = local_variables.get("df3")
-            if isinstance (df3,pd.DataFrame):
-                st.dataframe(df3)
-                df3.to_csv("filtered_csv.csv", index=False)
-                with open("filtered_csv.csv", "r") as file:st.download_button(label="Download new filtered dataset",data=file,file_name="data predict.csv",mime="text/csv")
-            else:
-                st.write(df3)
+        if checkForConnection():
+            response = requests.post(BACKEND_URL, json={"query": query})
+            print(response)
+            code = response.json()    
+            code['result'] = st.text_input("Type in your preferred code!",value = code['result'])
+            st.info("If there’s an issue with the code, please provide the corrected version; otherwise, leave it unchanged.")
+            if st.button("Show Result?"):
+                local_variables = {"df": df} 
+                exec("df3="+code['result'], {"__builtins__": None}, local_variables)
+                df3 = local_variables.get("df3")
+                if isinstance (df3,pd.DataFrame):
+                    st.dataframe(df3)
+                    df3.to_csv("filtered_csv.csv", index=False)
+                    with open("filtered_csv.csv", "r") as file:st.download_button(label="Download new filtered dataset",data=file,file_name="data predict.csv",mime="text/csv")
+                else:
+                    st.write(df3)
+        else:
+            st.error("We're sorry, the server is currently unavailable. Please try again later.")
 
 with st.sidebar:
     st.image("resources/photo-1666875753105-c63a6f3bdc86.jpg")
@@ -209,7 +243,7 @@ elif main_choice == 'Visualization':
     if os.path.exists('data.csv'):
         st.session_state.regression_button = False
         st.session_state.classification_button = False
-        st.subheader("Data Overview")
+        st.title("Data Overview")
         st.subheader("Uploaded Dataset")
         analysis(df,20)
         if os.path.exists("data_predict.csv"):
@@ -222,7 +256,7 @@ elif main_choice == 'Data Filtering/Aggregation':
     if os.path.exists('data.csv'):
         st.session_state.regression_button = False
         st.session_state.classification_button = False
-        st.subheader('Data Filtering/Aggregation')
+        st.title('Data Filtering/Aggregation')
         data_filtering_aggregation()
     else:
         st.warning("Upload a dataset to view insights!")
