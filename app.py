@@ -95,7 +95,7 @@ def redirect_to_home():
     st.write("")
     st.caption("_Made by Vishnu Narayanan_")
 
-def train_the_model(option_selected):
+def train_the_model(option_selected,type):
     global block_select_box
     st.info("The dataset should exclude the target column.")
     file2 = st.file_uploader("Model Prediction Data",type=['json','csv','xlsx'])
@@ -111,6 +111,10 @@ def train_the_model(option_selected):
             with st.spinner('Loading the model!'):
                 h2o.init()
                 h2o_df = h2o.H2OFrame(df)
+                if type == 1:
+                    h2o_df[option_selected] = h2o_df[option_selected].asfactor()
+                else:
+                    h2o_df[option_selected] = h2o_df[option_selected].asnumeric()
                 train, test = h2o_df.split_frame(ratios=[0.01], seed=1234)
                 aml = H2OAutoML(max_models=10, seed=1, max_runtime_secs=240)
             with st.spinner('Training the model... This may take a few minutes!'):
@@ -144,7 +148,6 @@ def train_model():
         
 def analysis(df,key):
     st.write(df.head())
-    # Correlation Heatmap
     st.subheader("Correlation Heatmap")
     heat_map_options = st.multiselect("Select columns for correlation",df.columns.tolist(),key=key+1)
     if heat_map_options:
@@ -152,7 +155,6 @@ def analysis(df,key):
         fig1 = plt.figure(figsize=(16, 14))  
         sns.heatmap(corr, annot=True, cmap='coolwarm', fmt=".2f", linewidths=0.5)
         st.pyplot(fig1)
-    # Line plot for each column
     st.subheader("Line Plot")
     line_plot_options = st.multiselect("Select any 2 columns for line plot",df.columns.tolist(),max_selections=2,key=key+2)
     if len(line_plot_options) == 2:
@@ -162,7 +164,6 @@ def analysis(df,key):
             axes[i].set_title(f"Line Plot for {column}")
             axes[i].legend()
         st.pyplot(fig3)
-    # Plotly Scatter Plot for each column
     st.subheader("Interactive Scatter Plot")
     scatter_plot_options = st.multiselect("Select any 2 columns for scatter plot",df.columns.tolist(),max_selections=2,key=key)
     if len(scatter_plot_options) == 2:
@@ -263,12 +264,11 @@ elif main_choice == 'Data Filtering/Aggregation':
     
 if st.session_state.regression_button:
     option_selected = st.selectbox("The column you want to predict?",options = df.columns,disabled=block_select_box,)
-    train_the_model(option_selected)
+    train_the_model(option_selected,0)
     
 if st.session_state.classification_button:
     option_selected = st.selectbox("The column you want to classify?",options = df.columns,disabled=block_select_box,)
-    df[option_selected] = df[option_selected].astype('category')
-    train_the_model(option_selected)
+    train_the_model(option_selected,1)
     
 def delete_files():
     paths = ['data.csv','data_predict.csv','filtered_csv.csv']
