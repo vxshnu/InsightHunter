@@ -10,3 +10,4 @@ requests==2.32.3
 setuptools>=65.5.0
 gunicorn==20.0.0
 flask
+setuptools
