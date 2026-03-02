@@ -9,6 +9,7 @@ plotly==5.24.1
 requests==2.32.3
 flask
 gunicorn==20.0.0
-setuptools>=65.5.0
+
+setuptools==68.2.2
 wheel
 rich<14
